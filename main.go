@@ -126,7 +126,7 @@ func main() {
 	}
 
 	// Keep the program running to capture resize events
-    select {} // Block forever
+    select {}
 }
 
 func clearScreen() {
