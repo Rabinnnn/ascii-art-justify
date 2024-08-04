@@ -5,7 +5,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
+	"os/exec"
+	//"os/signal"
 	"strings"
+	//"syscall"
+    "time"
+	 
 )
 
 func main() {
@@ -85,6 +91,31 @@ func main() {
 	// } else if flagSet == false {
 	// 	fmt.Print(functions.AsciiArt(stringInput, fileLine))
 	// }
+
+	prevWidth := functions.GetTerminalWidth()
+	go func() {
+        for {
+            time.Sleep(500 * time.Millisecond) // Adjust the sleep duration as needed
+            currWidth := functions.GetTerminalWidth()
+            if currWidth != prevWidth {
+                prevWidth = currWidth
+              //  fmt.Print("\033[H\033[2J") // Clear terminal
+			  clearScreen()
+			  if flagSet {
+					//width := functions.GetTerminalWidth()
+					//alignedText := functions.AlignText(stringInput, *alignFlag, width)
+					//fmt.Println(alignedText)
+					fmt.Print(functions.AsciiArt(stringInput, fileLine, *alignFlag))
+				}else {
+					fmt.Print(functions.AsciiArt(stringInput, fileLine, "left"))
+				}
+            }
+        }
+    }()
+	 // Initial display
+	 clearScreen()
+	// fmt.Print("\033[H\033[2J") // Clear terminal
+
 	if flagSet {
 		//width := functions.GetTerminalWidth()
 		//alignedText := functions.AlignText(stringInput, *alignFlag, width)
@@ -92,5 +123,18 @@ func main() {
 		fmt.Print(functions.AsciiArt(stringInput, fileLine, *alignFlag))
 	}else {
 		fmt.Print(functions.AsciiArt(stringInput, fileLine, "left"))
+	}
+
+	// Keep the program running to capture resize events
+    select {} // Block forever
+}
+
+func clearScreen() {
+	if runtime.GOOS == "windows" {
+		cmd := exec.Command("cmd", "/c", "cls")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	} else {
+		fmt.Print("\033[H\033[2J") // Clear screen for Unix-like systems
 	}
 }

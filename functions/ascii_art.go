@@ -92,7 +92,7 @@ func AsciiArt(input string, fileLine []string, alignment string) string {
                 case "left":
                     // No additional action needed for left alignment
                 }
-                result += lines[i] + "\n" + "$"
+                result += lines[i] + "\n"
             }
         }
     }
