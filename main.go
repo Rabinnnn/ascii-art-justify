@@ -1,68 +1,96 @@
 package main
 
 import (
+	"ascii-art-justify/functions"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
-
-	"ascii-art/functions"
 )
 
 func main() {
-	if len(os.Args) > 2 { // Checking if there are too many arguments has been entered
-		fmt.Println("You've entered too many arguments, enter only 1 argument after main.go")
-		return
-	} else if len(os.Args) < 2 { // Checking if there are no arguments enterd
-		fmt.Println("You've entered less arguments, enter only 1 argument after main.go")
+	// Define flag that will be used to specify the output file
+    alignFlag := flag.String("align", "left", "Alignment type: center, left, right, justify")
+	flag.Parse()
+
+	if len(flag.Args()) > 2 || len(flag.Args()) < 1 {
+		fmt.Println("Usage1: go run . [OPTION] [STRING] [BANNER]\n\nEX: go run . --align=right something standard")
 		return
 	}
 
-	input := os.Args[1] // Reading the argument entered
-	// fmt.Println(input)
+	stringInput := flag.Args()[0]
 
-	// handling a case where an empty string or \n only has been entered as argument
-	if input == "" {
-		return
-	} else if input == "\\n" {
-		fmt.Println()
+	// Variable to track if the flag was set
+	var nameSet bool
+	var flagSet bool 
+
+	// Enforce the flag format to be used to be --output=<filename.txt>
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "align" {
+			flagSet = true
+			result := strings.Replace(os.Args[1], *alignFlag, "", 1)
+			if (result == "--align=") {
+				nameSet = true
+			}
+		}
+	})
+	// defining usage and error handling
+	if !nameSet && len(flag.Args()) == 2 || !flagSet && len(flag.Args()) == 2{
+		fmt.Println("Usage2: go run . [OPTION] [STRING] [BANNER]\n\nEX: go run . --align=right something standard")
 		return
 	}
-	inputFile := "standard.txt"
 
-	// reading standard.txt and handling it's error
-	file, err := os.ReadFile(inputFile)
+	// if !(strings.HasSuffix(*alignFlag, ".txt")) {
+	// 	fmt.Println("Usage3: go run . [OPTION] [STRING] [BANNER]\n\nEX: go run . --align=right something standard")
+	// 	return
+	// }
+
+	BannerFile := "standard.txt"
+
+	if len(flag.Args()) == 2 {
+		banner := strings.Replace(flag.Args()[1], ".txt", "", 1)
+		BannerFile = banner + ".txt"
+	}
+
+	// read banner file specified
+	file, err := os.ReadFile(BannerFile)
 	if err != nil {
-		fmt.Println("Error openning", inputFile, err)
+		fmt.Println("Error openning", BannerFile, err)
 		return
 	}
-	var fileLine []string
+	file = []byte(strings.Replace(string(file), "\r\n", "\n", -1))
 
-	// slicing the file into an array of string based on new line
-	if inputFile == "thinkertoy.txt" {
-		fileLine = strings.Split(string(file), "\r\n")
-	} else {
-		fileLine = strings.Split(string(file), "\n")
-	}
+	fileLine := strings.Split(string(file), "\n")
 
-	//adding link to the file in the link variable
 	link := ""
-	switch inputFile {
+	switch BannerFile {
 	case "standard.txt":
 		link = "https://learn.zone01kisumu.ke/git/root/public/src/branch/master/subjects/ascii-art/standard.txt"
 	case "shadow.txt":
 		link = "https://learn.zone01kisumu.ke/git/root/public/src/branch/master/subjects/ascii-art/shadow.txt"
 	case "thinkertoy.txt":
 		link = "https://learn.zone01kisumu.ke/git/root/public/src/branch/master/subjects/ascii-art/thinkertoy.txt"
-	default:
-		fmt.Println("The file", inputFile,"is not valid for this program")
-		return
 	}
 
 	if len(fileLine) != 856 {
-		fmt.Println("The file", inputFile, "has been tampered with, please use the version from ",link,"!!!")
+		fmt.Println("The file", BannerFile, "is not correctly formated, please use the correct version", link, "!!!")
 		return
 	}
 
-	// functions.AsciiArt(input, string(file))
-	fmt.Print(functions.AsciiArt(input, fileLine))
+	//Write the results to the output file specified by user then print the results.
+	// asciiOutput := functions.AsciiArt(stringInput, fileLine)
+	// error := os.WriteFile(*alignFlag, []byte(asciiOutput), 0644)
+	// if error != nil {
+	// 	fmt.Println("Error:", error)
+	// } else if flagSet == false {
+	// 	fmt.Print(functions.AsciiArt(stringInput, fileLine))
+	// }
+	if flagSet {
+		//width := functions.GetTerminalWidth()
+		//alignedText := functions.AlignText(stringInput, *alignFlag, width)
+		//fmt.Println(alignedText)
+		fmt.Print(functions.AsciiArt(stringInput, fileLine, *alignFlag))
+	}else {
+		fmt.Print(functions.AsciiArt(stringInput, fileLine, "left"))
+	}
 }

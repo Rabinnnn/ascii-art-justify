@@ -3,7 +3,7 @@ package main
 import (
 	
 	"testing"
-	"ascii-art/functions"
+	"ascii-art-justify/functions"
 	"fmt"
 	"os"
 	"strings"
