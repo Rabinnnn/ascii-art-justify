@@ -24,7 +24,7 @@ func AsciiArt(input string, fileLine []string, alignment string) string {
 		fmt.Print(empty)
 		return ""
 	}
-	terminalWidth := GetTerminalWidth()
+	terminalWidth, _ := GetTerminalWidth()
 	for _, word := range words {
 		if word == "" {
 			result += "\n"
@@ -53,7 +53,7 @@ func AsciiArt(input string, fileLine []string, alignment string) string {
 						if padding < 0 {
 							padding = 0
 						}
-						result.WriteString(strings.Repeat(" ", padding) + line)
+						result.WriteString(strings.Repeat(" ", padding) + line + "\n")
 					}
 					return result.String()
                 case "center":
@@ -70,25 +70,55 @@ func AsciiArt(input string, fileLine []string, alignment string) string {
 						result.WriteString(strings.Repeat(" ", padding) + line + "\n")
 					}
 					return result.String()
+
                 case "justify":
-                    wordsInLine := strings.Fields(lines[i])
-                    if len(wordsInLine) > 1 {
-                        spacesNeeded := terminalWidth - len(strings.Join(wordsInLine, ""))
-                        spaceBetweenWords := spacesNeeded / (len(wordsInLine) - 1)
-                        extraSpaces := spacesNeeded % (len(wordsInLine) - 1)
-                        justifiedLine := strings.Builder{}
-                        for j, word := range wordsInLine {
-                            if j > 0 {
-                                justifiedLine.WriteString(strings.Repeat(" ", spaceBetweenWords))
-                                if extraSpaces > 0 {
-                                    justifiedLine.WriteString(" ")
-                                    extraSpaces--
-                                }
-                            }
-                            justifiedLine.WriteString(word)
-                        }
-                        lines[i] = justifiedLine.String()
-                    }
+					var result strings.Builder
+					//fmt.Println(lines)
+					for _, line := range lines {
+						
+						words := strings.Split(line, "")
+						if len(words) == 0 {
+							result.WriteString("\n")
+							continue
+						}
+				
+						totalWordLength := 0
+						for _, word := range words {
+							totalWordLength += len(word)
+						}
+						
+						spacesNeeded := terminalWidth - totalWordLength
+						if spacesNeeded < 0 {
+							spacesNeeded = 0
+						}
+				
+						spacesBetweenWords := len(words) - 1
+						fmt.Println(spacesBetweenWords)
+						if spacesBetweenWords > 0 {
+							spaceWidth := spacesNeeded / spacesBetweenWords
+							extraSpaces := spacesNeeded % spacesBetweenWords
+				
+							for i, word := range words {
+								result.WriteString(word)
+								if i < spacesBetweenWords {
+									result.WriteString(strings.Repeat(" ", spaceWidth))
+									if extraSpaces > 0 {
+										result.WriteString(" ")
+										extraSpaces--
+									}
+								}
+							}
+						} else {
+							// If there's only one word in the line, just add the spaces at the end
+							result.WriteString(words[0])
+							result.WriteString(strings.Repeat(" ", spacesNeeded))
+						}
+						result.WriteString("\n")
+					}
+				
+					return result.String()
+
+
                 case "left":
                     // No additional action needed for left alignment
                 }

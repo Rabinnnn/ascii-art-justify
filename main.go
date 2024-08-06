@@ -92,11 +92,11 @@ func main() {
 	// 	fmt.Print(functions.AsciiArt(stringInput, fileLine))
 	// }
 
-	prevWidth := functions.GetTerminalWidth()
+	prevWidth, _ := functions.GetTerminalWidth()
 	go func() {
         for {
             time.Sleep(500 * time.Millisecond) // Adjust the sleep duration as needed
-            currWidth := functions.GetTerminalWidth()
+            currWidth, _ := functions.GetTerminalWidth()
             if currWidth != prevWidth {
                 prevWidth = currWidth
               //  fmt.Print("\033[H\033[2J") // Clear terminal

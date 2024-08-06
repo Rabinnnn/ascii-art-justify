@@ -1,50 +1,74 @@
 package functions
 
 import (
-	"fmt"
-    "runtime"
+	// "fmt"
+    // "runtime"
   //  "flag"
-//	"os"
-	"os/exec"
-	"strings"
-    "strconv"
+	"os"
+"syscall"
+	"unsafe"
+	// "os/exec"
+	// "strings"
+    // "strconv"
 )
 
+func GetTerminalWidth() (int, error) {
+	type winsize struct {
+		Row    uint16
+		Col    uint16
+		Xpixel uint16
+		Ypixel uint16
+	}
 
-func GetTerminalWidth() int {
-    if runtime.GOOS == "windows" {
-        cmd := exec.Command("cmd", "/c", "mode con")
-        out, err := cmd.Output()
-        if err != nil {
-            fmt.Println("Error:", err)
-            return 80 // Default width if detection fails
-        }
-        output := string(out)
-        for _, line := range strings.Split(output, "\n") {
-            if strings.Contains(line, "Columns:") {
-                parts := strings.Split(line, ":")
-                if len(parts) > 1 {
-                    width, err := strconv.Atoi(strings.TrimSpace(parts[1]))
-                    if err == nil {
-                        return width
-                    }
-                }
-            }
-        }
-    } else {
-        cmd := exec.Command("tput", "cols")
-        out, err := cmd.Output()
-        if err != nil {
-            fmt.Println("Error:", err)
-            return 80 // Default width if detection fails
-        }
-        var width int
-        fmt.Sscanf(string(out), "%d", &width)
-        return width
-    }
-    return 80 // Default width if detection fails
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		uintptr(os.Stdout.Fd()),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)),
+	)
+
+	if int(retCode) == -1 {
+		return 0, errno
+	}
+
+	return int(ws.Col), nil
 }
+// func GetTerminalWidth() int {
+//     if runtime.GOOS == "windows" {
+//         cmd := exec.Command("cmd", "/c", "mode con")
+//         out, err := cmd.Output()
+//         if err != nil {
+//             fmt.Println("Error:", err)
+//             return 80 // Default width if detection fails
+//         }
+//         output := string(out)
+//         for _, line := range strings.Split(output, "\n") {
+//             if strings.Contains(line, "Columns:") {
+//                 parts := strings.Split(line, ":")
+//                 if len(parts) > 1 {
+//                     width, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+//                     if err == nil {
+//                         return width
+//                     }
+//                 }
+//             }
+//         }
+//     } else {
+//         cmd := exec.Command("tput", "cols")
+//         out, err := cmd.Output()
+//         if err != nil {
+//             fmt.Println("Error:", err)
+//             return 80 // Default width if detection fails
+//         }
+//         var width int
+//         fmt.Sscanf(string(out), "%d", &width)
+//         return width
+//     }
+//     return 80 // Default width if detection fails
+// }
 
+/*
 func AlignText(text, align string, width int) string {
     switch align {
     case "left":
@@ -76,7 +100,7 @@ func AlignText(text, align string, width int) string {
     default:
         return "Usage: go run . [OPTION] [STRING] [BANNER]"
     }
-}
+} */
 
 
 
